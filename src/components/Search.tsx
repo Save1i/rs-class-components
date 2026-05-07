@@ -1,20 +1,31 @@
 import React from "react";
 
-class Search extends React.Component {
-  constructor(props) {
+interface Props {
+  onSearch: (event: React.SyntheticEvent) => void,
+  onChange: (value: string) => void,
+  searchValue: string,
+
+}
+
+class Search extends React.Component<Props, {}> {
+  constructor(props: Props) {
     super(props);
     this.state = {
     };
   }
 
 
+    handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      this.props.onChange(e.target.value);
+    };
+
 
 
   render() {
     
     return (
-        <form onSubmit={this.handleSubmit}>
-          <input type="text" value={this.state.searchInput} onChange={this.handleChange}/>
+        <form onSubmit={this.props.onSearch}>
+          <input type="text" value={this.props.searchValue} onChange={this.handleChange}/>
           <input type="submit" value={"search"}></input>
         </form>
     );
