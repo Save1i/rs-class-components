@@ -31,20 +31,19 @@ class CardList extends React.Component<Props, {}> {
     
     return (
       <>
-      {
-        pokemon.results && ((pokemon.results).length >= 1) && (
+        {pokemon.results && pokemon.results.length >= 1 ? (
           <ul>
-            {pokemon.results.map((el) => {
-              return <li key={el.name}>{el.name}</li>
-            })}
+            {pokemon.results.map((el) => (
+              <li key={el.name}>{el.name}</li>
+            ))}
           </ul>
-       ) } 
-      
-        <div>
-          <p>Name: {pokemon.name}</p>
-          <p>Height: {pokemon.height}</p>
-          <p>Weight: {pokemon.weight}</p>
-        </div>
+        ) : (
+          <div>
+            <p>Name: {pokemon.name}</p>
+            <p>Height: {pokemon.height}</p>
+            <p>Weight: {pokemon.weight}</p>
+          </div>
+        )}
       </>
     );
 
