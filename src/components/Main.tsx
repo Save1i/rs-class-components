@@ -119,7 +119,7 @@ class Main extends React.Component<{}, State> {
 
         const resultData = await searchResponse.json()
         console.log(resultData)
-        this.setPokemon(resultData)
+        this.setPokemon([resultData])
         this.setError('')
       } catch (error: unknown) {
           if (error instanceof Error) {
