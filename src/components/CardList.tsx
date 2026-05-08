@@ -2,7 +2,7 @@ import React from "react";
 import type { Pokemon } from "./Main";
 
 interface Props {
-  item: Pokemon | null,
+  item: Pokemon[] | null,
   error: string,
 }
 
@@ -31,19 +31,15 @@ class CardList extends React.Component<Props, {}> {
     
     return (
       <>
-        {pokemon.results && pokemon.results.length >= 1 ? (
-          <ul>
-            {pokemon.results.map((el) => (
-              <li key={el.name}>{el.name}</li>
-            ))}
-          </ul>
-        ) : (
-          <div>
-            <p>Name: {pokemon.name}</p>
-            <p>Height: {pokemon.height}</p>
-            <p>Weight: {pokemon.weight}</p>
-          </div>
-        )}
+        <ul>
+          {pokemon.map((el) => (
+            <li key={el.id}>
+              <p>Name: {el.name}</p>
+              <p>Height: {el.height}</p>
+              <p>Weight: {el.weight}</p>
+            </li>
+          ))}
+        </ul>
       </>
     );
 
