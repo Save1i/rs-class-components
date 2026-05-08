@@ -12,12 +12,11 @@ export interface Pokemon {
   name: string,
   height: number,
   weight: number,
-  results?: Array<results>,
 }
 
 interface State {
   searchInput: string;
-  pokemon: Pokemon | null;
+  pokemon: Pokemon[] | null;
   searchError: string;
 }
 
@@ -32,7 +31,7 @@ class Main extends React.Component<{}, State> {
     
   }
 
-  setPokemon = (item: Pokemon | null) => {
+  setPokemon = (item: Pokemon[] | null) => {
     this.setState({pokemon: item})
   }
 
@@ -63,9 +62,29 @@ class Main extends React.Component<{}, State> {
         }
 
         const resultData = await pokemonData.json()
-        console.log(resultData)
-        this.setPokemon(resultData)
-        this.setError('')
+
+        const pokemonList = await Promise.all(
+          resultData.results.map(async (pokemon: results) => {
+            const detailsResponse = await fetch(pokemon.url)
+
+            if (!detailsResponse.ok) {
+              throw new Error('Ошибка загрузки покемона')
+            }
+
+            const details = await detailsResponse.json()
+
+            return {
+              id: details.id,
+              name: details.name,
+              height: details.height,
+              weight: details.weight,
+            }
+          })
+      )
+      this.setState({
+        pokemon: pokemonList,
+        searchError: '',
+      })
       } catch (error: unknown) {
         if (error instanceof Error) {
           this.setError(error.message)
