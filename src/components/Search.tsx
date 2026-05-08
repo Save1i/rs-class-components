@@ -25,8 +25,11 @@ class Search extends React.Component<Props, {}> {
     
     return (
         <form onSubmit={this.props.onSearch}>
-          <input type="text" value={this.props.searchValue} onChange={this.handleChange}/>
-          <input type="submit" value={"search"}></input>
+          <div className="">
+            <input type="text" value={this.props.searchValue} onChange={this.handleChange}/>
+            <input type="submit" value={"search"}></input>
+          </div>
+          <span>Поиск осуществляется по полному имени покемона</span>
         </form>
     );
 
