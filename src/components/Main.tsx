@@ -77,6 +77,12 @@ class Main extends React.Component<{}, State> {
 
       const url = "https://pokeapi.co/api/v2/pokemon/"
       try {
+        const isValidName = /^[a-z]+$/i.test(name)
+
+        if (!isValidName) {
+          throw new Error('Некорректное имя покемона')
+        }
+
         const searchResponse = await fetch(`${url}${name}`)
 
         if (searchResponse.status === 404) {
