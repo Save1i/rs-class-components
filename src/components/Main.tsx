@@ -47,6 +47,11 @@ class Main extends React.Component<{}, State> {
     const initialItem = async() => {
       const url = "https://pokeapi.co/api/v2/pokemon/"
       try {
+        const isValidName = /^[a-z]+$/i.test(searchInputClean)
+
+        if (!isValidName) {
+          throw new Error('Некорректное имя покемона')
+        }
         const pokemonData = await fetch(`${url}${searchInputClean}`)
 
         if (pokemonData.status === 404) {
