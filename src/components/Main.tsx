@@ -73,9 +73,8 @@ class Main extends React.Component<{}, State> {
 
   }
 
-  search = (name: string) => {
+  search = async(name: string) => {
 
-    const searchItem = async(name: string) => {
       const url = "https://pokeapi.co/api/v2/pokemon/"
       try {
         const searchResponse = await fetch(`${url}${name}`)
@@ -97,10 +96,6 @@ class Main extends React.Component<{}, State> {
             this.setError(error.message)
           }
       }
-      
-    }
-    
-    searchItem(name)
   }
 
   
