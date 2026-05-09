@@ -23,7 +23,7 @@ class CardList extends React.Component<Props, {}> {
     const { item: pokemon, error: searchError } = this.props;
 
     if (searchError) {
-      return <p className="error">Ошибка: {searchError}</p>;
+      return <p className="error">Error: {searchError}</p>;
     }
 
     if (!pokemon) {
@@ -31,8 +31,8 @@ class CardList extends React.Component<Props, {}> {
     }
     
     return (
-      <>
-       <ul className="card-list">
+      <div className="card-list">
+       <ul className="card-list-content">
           {pokemon.map((el) => (
             <li className="card" key={el.id}>
 
@@ -61,7 +61,7 @@ class CardList extends React.Component<Props, {}> {
             </li>
           ))}
         </ul>
-      </>
+      </div>
     );
 
   }

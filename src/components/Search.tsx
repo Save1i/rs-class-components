@@ -25,29 +25,29 @@ class Search extends React.Component<Props, {}> {
   render() {
     
     return (
-      <>
-      <form className="search-form" onSubmit={this.props.onSearch}>
-        
-        <input
-          className="search-input"
-          type="text"
-          value={this.props.searchValue}
-          onChange={this.handleChange}
-          placeholder="Enter pokemon name..."
-        />
+      <div className="search-form">
+        <form className="search-form-content" onSubmit={this.props.onSearch}>
+          
+          <input
+            className="search-input"
+            type="text"
+            value={this.props.searchValue}
+            onChange={this.handleChange}
+            placeholder="Enter pokemon name..."
+          />
 
-        <input
-          className="search-button"
-          type="submit"
-          value="Search"
-        />
+          <input
+            className="search-button"
+            type="submit"
+            value="search"
+          />
 
-      </form>
+        </form>
 
-      <span className="search-hint">
-        Поиск осуществляется по полному имени покемона
-      </span>
-      </>
+        <p className="text-info">
+          The search is performed by the full name of the Pokemon
+        </p>
+      </div>
     );
 
   }
