@@ -123,9 +123,33 @@ class Main extends React.Component<{}, State> {
         }
 
         const resultData = await searchResponse.json()
-        console.log(resultData)
-        this.setPokemon([resultData])
-        this.setError('')
+
+        if(resultData.results) {
+          const pokemonList = await Promise.all(
+            resultData.results.map(async (pokemon: results) => {
+              const detailsResponse = await fetch(pokemon.url)
+
+              if (!detailsResponse.ok) {
+                throw new Error('Ошибка загрузки покемона')
+              }
+
+              const details = await detailsResponse.json()
+
+              return {
+                id: details.id,
+                name: details.name,
+                height: details.height,
+                weight: details.weight,
+              }
+            })
+          )
+
+          this.setPokemon(pokemonList)
+          this.setError('')
+        } else {
+          this.setPokemon([resultData])
+          this.setError('')
+        }
       } catch (error: unknown) {
           if (error instanceof Error) {
             this.setError(error.message)
