@@ -20,6 +20,7 @@ interface State {
   searchInput: string;
   pokemon: Pokemon[] | null;
   searchError: string;
+  hasTestError: boolean;
 }
 
 class Main extends React.Component<{}, State> {
@@ -29,6 +30,7 @@ class Main extends React.Component<{}, State> {
       searchInput: localStorage.getItem('searchInput') || '',
       pokemon: null,
       searchError: '',
+      hasTestError: false,
     };
     
   }
@@ -41,6 +43,12 @@ class Main extends React.Component<{}, State> {
     this.setState({searchError: error})
   }
 
+  triggerTestError = () => {
+    this.setState({
+      hasTestError: true,
+    })
+  }
+
   componentDidMount(): void {
 
     const searchInputClean = (this.state.searchInput).trim()
@@ -51,12 +59,12 @@ class Main extends React.Component<{}, State> {
         const isValidName = /^[a-z]+$/i.test(searchInputClean)
 
         if (!isValidName && searchInputClean) {
-          throw new Error('Некорректное имя покемона')
+          throw new Error('Incorrect Pokemon name')
         }
         const pokemonData = await fetch(`${url}${searchInputClean}`)
 
         if (pokemonData.status === 404) {
-          throw new Error(`Покемон "${searchInputClean}" не найден`);
+          throw new Error(`Pokemon "${searchInputClean}" not found`);
         }
 
         if (!pokemonData.ok) {
@@ -71,7 +79,7 @@ class Main extends React.Component<{}, State> {
               const detailsResponse = await fetch(pokemon.url)
 
               if (!detailsResponse.ok) {
-                throw new Error('Ошибка загрузки покемона')
+                throw new Error('Pokemon loading error')
               }
 
               const details = await detailsResponse.json()
@@ -120,13 +128,13 @@ class Main extends React.Component<{}, State> {
         const isValidName = /^[a-z]+$/i.test(name)
 
         if (!isValidName && name) {
-          throw new Error('Некорректное имя покемона')
+          throw new Error('Incorrect Pokemon name')
         }
 
         const searchResponse = await fetch(`${url}${name}`)
 
         if (searchResponse.status === 404) {
-          throw new Error(`Покемон "${name}" не найден`);
+          throw new Error(`Pokemon "${searchResponse}" not found`);
         }
 
         if (!searchResponse.ok) {
@@ -141,7 +149,7 @@ class Main extends React.Component<{}, State> {
               const detailsResponse = await fetch(pokemon.url)
 
               if (!detailsResponse.ok) {
-                throw new Error('Ошибка загрузки покемона')
+                throw new Error('Pokemon loading error')
               }
 
               const details = await detailsResponse.json()
@@ -200,6 +208,9 @@ class Main extends React.Component<{}, State> {
   }
 
   render() {
+    if (this.state.hasTestError) {
+      throw new Error('Test application error')
+    }
     
     return (
     <main className="app">
@@ -212,6 +223,13 @@ class Main extends React.Component<{}, State> {
           onChange={this.handleChange}
           onSearch={this.handleSubmit}
         />
+        
+        <button
+          className="search-button"
+          onClick={this.triggerTestError}
+        >
+          Test Error
+        </button>
 
         <CardList
           item={this.state.pokemon}
