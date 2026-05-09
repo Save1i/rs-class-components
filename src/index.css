@@ -1,0 +1,168 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Inter, sans-serif;
+  background: #F5F7F6;
+  color: #1F2933;
+}
+
+.app {
+  min-height: 100vh;
+  padding: 40px 20px;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: 42px;
+  font-weight: 700;
+  margin-bottom: 32px;
+  color: #1F2933;
+}
+
+.search-form {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 14px 18px;
+  border: 1px solid #D9DFDC;
+  border-radius: 14px;
+  background: #FCFCFC;
+  color: #1F2933;
+  font-size: 16px;
+  outline: none;
+  transition: 0.2s ease;
+}
+
+.search-input:focus {
+  border-color: #4CAF7D;
+  box-shadow: 0 0 0 4px rgba(76, 175, 125, 0.15);
+}
+
+.search-input::placeholder {
+  color: #9AA5B1;
+}
+
+.search-button {
+  padding: 14px 24px;
+  border: none;
+  border-radius: 14px;
+  background: #4CAF7D;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.search-button:hover {
+  background: #3E9668;
+}
+
+.search-button:active {
+  transform: scale(0.98);
+}
+
+.search-hint {
+  display: inline-block;
+  margin-bottom: 40px;
+  color: #52606D;
+  font-size: 14px;
+}
+
+.card-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+  list-style: none;
+}
+
+.card {
+  background: #FCFCFC;
+  border: 1px solid #E5E7EB;
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+  transition: 0.25s ease;
+}
+
+.card:hover {
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.08);
+}
+
+.card-image-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #DFF5E8;
+  border-radius: 18px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.card-image {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.card-name {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  text-transform: capitalize;
+  color: #1F2933;
+}
+
+.card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.card-text {
+  font-size: 15px;
+  color: #52606D;
+}
+
+.error {
+  margin-top: 20px;
+  padding: 16px;
+  border-radius: 14px;
+  background: #FFE5E5;
+  color: #C53030;
+  border: 1px solid #F5B5B5;
+  font-weight: 500;
+}
+
+.loading {
+  margin-top: 20px;
+  color: #52606D;
+  font-size: 16px;
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: 32px;
+  }
+
+  .search-form {
+    flex-direction: column;
+  }
+
+  .search-button {
+    width: 100%;
+  }
+}
