@@ -83,15 +83,11 @@ class Main extends React.Component<{}, State> {
             })
         )
 
-        this.setState({
-          pokemon: pokemonList,
-          searchError: '',
-        })
+        this.setPokemon(pokemonList)
+        this.setError('')
       } else {
-        this.setState({
-          pokemon: [resultData],
-          searchError: '',
-        })
+        this.setPokemon([resultData])
+        this.setError('')
       }
 
       } catch (error: unknown) {
