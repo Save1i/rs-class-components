@@ -12,6 +12,7 @@ export interface Pokemon {
   name: string,
   height: number,
   weight: number,
+  image: string,
 }
 
 interface State {
@@ -79,6 +80,7 @@ class Main extends React.Component<{}, State> {
                 name: details.name,
                 height: details.height,
                 weight: details.weight,
+                image: details.sprites.front_default,
               }
             })
         )
@@ -86,7 +88,15 @@ class Main extends React.Component<{}, State> {
         this.setPokemon(pokemonList)
         this.setError('')
       } else {
-        this.setPokemon([resultData])
+        this.setPokemon([
+          {
+            id: resultData.id,
+            name: resultData.name,
+            height: resultData.height,
+            weight: resultData.weight,
+            image: resultData.sprites.front_default,
+          }
+        ])
         this.setError('')
       }
 
@@ -140,6 +150,7 @@ class Main extends React.Component<{}, State> {
                 name: details.name,
                 height: details.height,
                 weight: details.weight,
+                image: details.sprites.front_default,
               }
             })
           )
@@ -147,7 +158,15 @@ class Main extends React.Component<{}, State> {
           this.setPokemon(pokemonList)
           this.setError('')
         } else {
-          this.setPokemon([resultData])
+          this.setPokemon([
+            {
+                id: resultData.id,
+                name: resultData.name,
+                height: resultData.height,
+                weight: resultData.weight,
+                image: resultData.sprites.front_default,
+              }
+          ])
           this.setError('')
         }
       } catch (error: unknown) {
