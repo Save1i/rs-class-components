@@ -28,6 +28,10 @@ body {
 }
 
 .search-form {
+  margin-bottom: 40px;
+}
+
+.search-form-content {
   display: flex;
   gap: 12px;
   margin-bottom: 12px;
@@ -74,14 +78,17 @@ body {
   transform: scale(0.98);
 }
 
-.search-hint {
+.text-info {
   display: inline-block;
-  margin-bottom: 40px;
   color: #52606D;
   font-size: 14px;
 }
 
 .card-list {
+  margin-top: 40px;
+}
+
+.card-list-content {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 24px;
@@ -153,12 +160,25 @@ body {
   font-size: 16px;
 }
 
+.error-boundary {
+  padding: 40px;
+  border-radius: 24px;
+  background: #FFE5E5;
+  border: 1px solid #F5B5B5;
+  color: #C53030;
+  margin-top: 40px;
+}
+
+.error-boundary h2 {
+  margin-bottom: 12px;
+}
+
 @media (max-width: 768px) {
   .title {
     font-size: 32px;
   }
 
-  .search-form {
+  .search-form-container {
     flex-direction: column;
   }
 
