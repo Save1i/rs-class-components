@@ -1,4 +1,5 @@
 import React from "react";
+import '../styles/style.css'
 
 interface Props {
   onSearch: (event: React.SyntheticEvent) => void,

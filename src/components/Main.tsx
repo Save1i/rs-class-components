@@ -1,6 +1,7 @@
 import React from "react";
 import Search from "./Search";
 import CardList from "./CardList";
+import '../styles/style.css'
 
 type results = {
   name: string,

@@ -1,5 +1,6 @@
 import React from "react";
 import type { Pokemon } from "./Main";
+import '../styles/style.css'
 
 interface Props {
   item: Pokemon[] | null,
