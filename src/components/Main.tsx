@@ -1,7 +1,7 @@
 import React from "react";
 import Search from "./Search";
 import CardList from "./CardList";
-import '../styles/style.css'
+import '../index.css';
 
 type results = {
   name: string,
@@ -202,17 +202,24 @@ class Main extends React.Component<{}, State> {
   render() {
     
     return (
-      <div>
+    <main className="app">
+      <div className="container">
+
+        <h1 className="title">Pokemon Search</h1>
+
         <Search 
           searchValue={this.state.searchInput}
           onChange={this.handleChange}
           onSearch={this.handleSubmit}
         />
+
         <CardList
           item={this.state.pokemon}
           error={this.state.searchError}
         />
+
       </div>
+    </main>
     );
 
   }

@@ -1,6 +1,6 @@
 import React from "react";
 import type { Pokemon } from "./Main";
-import '../styles/style.css'
+import '../index.css';
 
 interface Props {
   item: Pokemon[] | null,
@@ -32,13 +32,32 @@ class CardList extends React.Component<Props, {}> {
     
     return (
       <>
-        <ul>
+       <ul className="card-list">
           {pokemon.map((el) => (
-            <li key={el.id}>
-              <img src={el.image} alt={el.name} />
-              <p>Name: {el.name}</p>
-              <p>Height: {el.height}</p>
-              <p>Weight: {el.weight}</p>
+            <li className="card" key={el.id}>
+
+              <div className="card-image-wrapper">
+                <img
+                  className="card-image"
+                  src={el.image}
+                  alt={el.name}
+                />
+              </div>
+
+              <h2 className="card-name">
+                {el.name}
+              </h2>
+
+              <div className="card-info">
+                <p className="card-text">
+                  Height: {el.height}
+                </p>
+
+                <p className="card-text">
+                  Weight: {el.weight}
+                </p>
+              </div>
+
             </li>
           ))}
         </ul>

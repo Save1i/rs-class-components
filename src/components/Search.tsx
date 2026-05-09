@@ -1,5 +1,5 @@
 import React from "react";
-import '../styles/style.css'
+import '../index.css';
 
 interface Props {
   onSearch: (event: React.SyntheticEvent) => void,
@@ -25,13 +25,29 @@ class Search extends React.Component<Props, {}> {
   render() {
     
     return (
-        <form onSubmit={this.props.onSearch}>
-          <div className="">
-            <input type="text" value={this.props.searchValue} onChange={this.handleChange}/>
-            <input type="submit" value={"search"}></input>
-          </div>
-          <span>Поиск осуществляется по полному имени покемона</span>
-        </form>
+      <>
+      <form className="search-form" onSubmit={this.props.onSearch}>
+        
+        <input
+          className="search-input"
+          type="text"
+          value={this.props.searchValue}
+          onChange={this.handleChange}
+          placeholder="Enter pokemon name..."
+        />
+
+        <input
+          className="search-button"
+          type="submit"
+          value="Search"
+        />
+
+      </form>
+
+      <span className="search-hint">
+        Поиск осуществляется по полному имени покемона
+      </span>
+      </>
     );
 
   }
