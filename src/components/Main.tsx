@@ -48,7 +48,7 @@ class Main extends React.Component<{}, State> {
       try {
         const isValidName = /^[a-z]+$/i.test(searchInputClean)
 
-        if (!isValidName) {
+        if (!isValidName && searchInputClean) {
           throw new Error('Некорректное имя покемона')
         }
         const pokemonData = await fetch(`${url}${searchInputClean}`)
@@ -112,7 +112,7 @@ class Main extends React.Component<{}, State> {
       try {
         const isValidName = /^[a-z]+$/i.test(name)
 
-        if (!isValidName) {
+        if (!isValidName && name) {
           throw new Error('Некорректное имя покемона')
         }
 
