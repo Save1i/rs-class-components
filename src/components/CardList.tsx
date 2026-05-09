@@ -34,6 +34,7 @@ class CardList extends React.Component<Props, {}> {
         <ul>
           {pokemon.map((el) => (
             <li key={el.id}>
+              <img src={el.image} alt={el.name} />
               <p>Name: {el.name}</p>
               <p>Height: {el.height}</p>
               <p>Weight: {el.weight}</p>
