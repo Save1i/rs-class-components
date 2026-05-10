@@ -134,7 +134,7 @@ class Main extends React.Component<{}, State> {
         const searchResponse = await fetch(`${url}${name}`)
 
         if (searchResponse.status === 404) {
-          throw new Error(`Pokemon "${searchResponse}" not found`);
+          throw new Error(`Pokemon "${name}" not found`);
         }
 
         if (!searchResponse.ok) {
