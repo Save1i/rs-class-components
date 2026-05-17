@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { describe, test, expect, vi, afterEach} from 'vitest'
-import userEvent from '@testing-library/user-event'
+import { userEvent } from '@testing-library/user-event'
 import Main from '../components/Main'
 import ErrorBoundary from '../components/ErrorBoundary'
 
@@ -10,6 +10,31 @@ describe('Rendering Tests', () => {
     vi.restoreAllMocks()
     localStorage.clear()
   })
+
+  const mockSuccessFetch = () => {
+  vi.spyOn(window, 'fetch').mockResolvedValue({
+    ok: true,
+    json: async () => ({
+      id: 1,
+      name: 'pikachu',
+      height: 10,
+      weight: 20,
+      sprites: {
+        front_default: 'img.png',
+      },
+    }),
+  } as Response)
+}
+
+const mockNotFound = () => {
+  vi.spyOn(window, 'fetch').mockResolvedValue({
+    ok: false,
+    status: 404,
+    json: async () => ({}),
+  } as Response)
+}
+
+const user = userEvent.setup();
 
   test('Saves search term to localStorage when search button is clicked', async() => {
     const setItemSpy = vi.spyOn(
@@ -23,9 +48,9 @@ describe('Rendering Tests', () => {
 
     const buttonElement = screen.getByDisplayValue(/search/i)
 
-    await userEvent.type(inputElement, 'ditto')
+    await user.type(inputElement, 'ditto')
 
-    await userEvent.click(buttonElement)
+    await user.click(buttonElement)
 
     expect(setItemSpy).toHaveBeenCalledWith('searchInput', 'ditto')
 
@@ -42,9 +67,9 @@ describe('Rendering Tests', () => {
 
     const buttonElement = screen.getByDisplayValue(/search/i)
 
-    await userEvent.type(inputElement, ' ditto  ')
+    await user.type(inputElement, ' ditto  ')
 
-    await userEvent.click(buttonElement)
+    await user.click(buttonElement)
 
     expect(setItemSpy).toHaveBeenCalledWith('searchInput', 'ditto')
 
@@ -74,11 +99,11 @@ describe('Rendering Tests', () => {
 
     const buttonElement = screen.getByDisplayValue(/search/i)
 
-    await userEvent.clear(inputElement)
+    await user.clear(inputElement)
 
-    await userEvent.type(inputElement, 'pikachu')
+    await user.type(inputElement, 'pikachu')
 
-    await userEvent.click(buttonElement)
+    await user.click(buttonElement)
 
     expect(setItemSpy).toHaveBeenCalledWith('searchInput', 'pikachu')
 
@@ -95,7 +120,7 @@ describe('Rendering Tests', () => {
 
     const errorTestBtn = screen.getByText(/Test Error/i)
 
-    await userEvent.click(errorTestBtn)
+    await user.click(errorTestBtn)
 
     const errorElement = screen.getByText(/The application encountered an unexpected error./i)
 
@@ -110,11 +135,11 @@ describe('Rendering Tests', () => {
 
     const buttonElement = screen.getByDisplayValue(/search/i)
 
-    await userEvent.type(inputElement, 'pikachu67')
+    await user.type(inputElement, 'pikachu67')
 
-    await userEvent.click(buttonElement)
+    await user.click(buttonElement)
 
-    const invalidNameError = screen.getByText(/Incorrect Pokemon name/i)
+    const invalidNameError = await screen.findByText(/Incorrect Pokemon name/i)
 
     expect(invalidNameError).toBeInTheDocument()
 
@@ -126,12 +151,47 @@ describe('Rendering Tests', () => {
 
     const buttonElement = screen.getByDisplayValue(/search/i)
 
-    await userEvent.type(inputElement, 'pikach')
+    await user.type(inputElement, 'pikach')
 
-    await userEvent.click(buttonElement)
+    await user.click(buttonElement)
 
     const invalidNameError = await screen.findByText(/Error: Pokemon "pikach" not found/i)
 
     expect(invalidNameError).toBeInTheDocument()
+  }),
+  test('loads pokemon from API', async () => {
+    mockSuccessFetch()
+
+    render(<Main />)
+
+    const input = screen.getByPlaceholderText(/enter pokemon/i)
+    const button = screen.getByDisplayValue(/search/i)
+
+    await user.type(input, 'pikachu')
+    await user.click(button)
+
+    expect(await screen.findByText('pikachu')).toBeInTheDocument()
+  }),
+  test('handles 404 api error correctly', async () => {
+    mockNotFound()
+
+    render(<Main />)
+
+    const input = screen.getByPlaceholderText(/enter pokemon/i)
+    const button = screen.getByDisplayValue(/search/i)
+
+    await user.type(input, 'pikach')
+    await user.click(button)
+
+    expect(
+      await screen.findByText(/not found/i)
+    ).toBeInTheDocument()
+  }),
+  test('loads initial pokemon list on mount', async () => {
+    mockSuccessFetch()
+
+    render(<Main />)
+
+    expect(await screen.findByText('pikachu')).toBeInTheDocument()
   })
 })

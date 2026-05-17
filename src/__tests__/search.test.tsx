@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react'
 import { describe, test, expect, vi} from 'vitest'
 import userEvent from '@testing-library/user-event'
 import Search from '../components/Search'
+import Main from '../components/Main'
 
 describe('Rendering Tests', () => {
   test('Renders search input and search button', () => {
@@ -64,6 +65,39 @@ describe('Rendering Tests', () => {
 
     expect(handleChange).toHaveBeenCalledTimes(5)
     expect(handleChange).toHaveBeenLastCalledWith('o')
+
+  }),
+  test('Saves search term to localStorage when search button is clicked', async() => {
+    vi.spyOn(window, 'fetch').mockResolvedValue(
+    new Response(
+      JSON.stringify({
+        id: 132,
+        name: 'ditto',
+        height: 3,
+        weight: 40,
+        sprites: {
+          front_default: 'ditto.png'
+        }
+      }),
+      { status: 200 }
+    )
+  )
+
+    const setItemSpy = vi.spyOn(Storage.prototype, 'setItem')
+
+    const user = userEvent.setup()
+
+    render(<Main />)
+
+    const inputElement = screen.getByPlaceholderText(/Enter pokemon name.../i)
+
+    const buttonElement = screen.getByDisplayValue(/search/i)
+
+    await user.type(inputElement, 'ditto')
+
+    await user.click(buttonElement)
+
+    expect(setItemSpy).toHaveBeenCalledWith('searchInput', 'ditto')
 
   })
 })
