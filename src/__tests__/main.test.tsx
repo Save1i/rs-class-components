@@ -1,197 +1,174 @@
-import { render, screen } from '@testing-library/react'
-import { describe, test, expect, vi, afterEach} from 'vitest'
-import { userEvent } from '@testing-library/user-event'
-import Main from '../components/Main'
-import ErrorBoundary from '../components/ErrorBoundary'
+import { render, screen, waitFor } from '@testing-library/react';
+import { describe, expect, test, vi, afterEach } from 'vitest';
+import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
+import App from '../App';
+import { ThemeProvider } from '../context/ThemeContext';
 
-describe('Rendering Tests', () => {
-
+describe('App routing and main flow', () => {
   afterEach(() => {
-    vi.restoreAllMocks()
-    localStorage.clear()
-  })
+    vi.restoreAllMocks();
+    localStorage.clear();
+  });
 
-  const mockSuccessFetch = () => {
-  vi.spyOn(window, 'fetch').mockResolvedValue({
-    ok: true,
-    json: async () => ({
-      id: 1,
-      name: 'pikachu',
-      height: 10,
-      weight: 20,
-      sprites: {
-        front_default: 'img.png',
-      },
-    }),
-  } as Response)
-}
+  test('opens About page from navigation', async () => {
+    vi.spyOn(window, 'fetch').mockResolvedValue({ ok: true, json: async () => ({ results: [] }) } as Response);
 
-const mockNotFound = () => {
-  vi.spyOn(window, 'fetch').mockResolvedValue({
-    ok: false,
-    status: 404,
-    json: async () => ({}),
-  } as Response)
-}
+    render(
+      <MemoryRouter initialEntries={['/?page=1']}>
+        <ThemeProvider>
+          <App />
+        </ThemeProvider>
+      </MemoryRouter>
+    );
 
-const user = userEvent.setup();
+    expect(screen.getByLabelText(/theme/i)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('link', { name: /about/i }));
+    expect(screen.getByText(/Author:/i)).toBeInTheDocument();
+  });
 
-  test('Saves search term to localStorage when search button is clicked', async() => {
-    const setItemSpy = vi.spyOn(
-      Storage.prototype,
-      'setItem'
-    )
+  test('shows 404 page on unknown route', () => {
+    render(
+      <MemoryRouter initialEntries={['/unknown']}>
+        <ThemeProvider>
+          <App />
+        </ThemeProvider>
+      </MemoryRouter>
+    );
 
-    render(<Main/>)
+    expect(screen.getByText('404')).toBeInTheDocument();
+    expect(screen.getByText(/Page not found/i)).toBeInTheDocument();
+  });
 
-    const inputElement = screen.getByPlaceholderText(/Enter pokemon name.../i)
+  test('saves trimmed search term to localStorage', async () => {
+    vi.spyOn(window, 'fetch').mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ id: 25, name: 'pikachu', height: 4, weight: 60, sprites: { front_default: 'img.png' } }),
+    } as Response);
 
-    const buttonElement = screen.getByDisplayValue(/search/i)
+    render(
+      <MemoryRouter initialEntries={['/?page=1']}>
+        <ThemeProvider>
+          <App />
+        </ThemeProvider>
+      </MemoryRouter>
+    );
 
-    await user.type(inputElement, 'ditto')
+    await userEvent.type(screen.getByPlaceholderText(/Enter pokemon name.../i), ' Pikachu  ');
+    await userEvent.click(screen.getByDisplayValue(/search/i));
 
-    await user.click(buttonElement)
+    expect(localStorage.getItem('searchInput')).toBe('pikachu');
+  });
 
-    expect(setItemSpy).toHaveBeenCalledWith('searchInput', 'ditto')
+  test('shows validation error for invalid pokemon name', async () => {
+    render(
+      <MemoryRouter initialEntries={['/?page=1']}>
+        <ThemeProvider>
+          <App />
+        </ThemeProvider>
+      </MemoryRouter>
+    );
 
-  }),
-  test('Trims whitespace from search input before saving', async() => {
-    const setItemSpy = vi.spyOn(
-      Storage.prototype,
-      'setItem'
-    )
+    await userEvent.type(screen.getByPlaceholderText(/Enter pokemon name.../i), 'pikachu67');
+    await userEvent.click(screen.getByDisplayValue(/search/i));
 
-    render(<Main/>)
+    await waitFor(() => expect(screen.getByText(/Incorrect Pokemon name/i)).toBeInTheDocument());
+  });
 
-    const inputElement = screen.getByPlaceholderText(/Enter pokemon name.../i)
+  test('loads pokemon list and opens details by clicking card content', async () => {
+    vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
+      const url = String(input);
 
-    const buttonElement = screen.getByDisplayValue(/search/i)
+      if (url.includes('/pokemon?limit=')) {
+        return {
+          ok: true,
+          json: async () => ({ results: [{ name: 'bulbasaur', url: 'https://pokeapi.co/api/v2/pokemon/1' }] }),
+        } as Response;
+      }
 
-    await user.type(inputElement, ' ditto  ')
+      if (url.endsWith('/pokemon/1')) {
+        return {
+          ok: true,
+          json: async () => ({
+            id: 1,
+            name: 'bulbasaur',
+            height: 7,
+            weight: 69,
+            sprites: { front_default: 'img.png' },
+            base_experience: 64,
+            order: 1,
+            types: [{ type: { name: 'grass' } }],
+            abilities: [{ ability: { name: 'overgrow' } }],
+          }),
+        } as Response;
+      }
 
-    await user.click(buttonElement)
+      return {
+        ok: true,
+        json: async () => ({
+          id: 1,
+          name: 'bulbasaur',
+          height: 7,
+          weight: 69,
+          sprites: { front_default: 'img.png' },
+        }),
+      } as Response;
+    });
 
-    expect(setItemSpy).toHaveBeenCalledWith('searchInput', 'ditto')
+    render(
+      <MemoryRouter initialEntries={['/?page=1']}>
+        <ThemeProvider>
+          <App />
+        </ThemeProvider>
+      </MemoryRouter>
+    );
 
-  }),
-  test('Retrieves saved search term on component mount', () => {
+    await waitFor(() => expect(screen.getByText('bulbasaur')).toBeInTheDocument());
+    await userEvent.click(screen.getByRole('link', { name: /bulbasaur/i }));
+    await waitFor(() => expect(screen.getByText(/Base experience:/i)).toBeInTheDocument());
+  });
 
-    localStorage.setItem('searchInput', 'ditto')
+  test('keeps selected item after navigation and unselects from flyout', async () => {
+    vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
+      const url = String(input);
 
-    render(<Main/>)
+      if (url.includes('/pokemon?limit=')) {
+        return {
+          ok: true,
+          json: async () => ({ results: [{ name: 'bulbasaur', url: 'https://pokeapi.co/api/v2/pokemon/1' }] }),
+        } as Response;
+      }
 
-    const inputElement = screen.getByPlaceholderText(/enter pokemon name.../i)
+      return {
+        ok: true,
+        json: async () => ({
+          id: 1,
+          name: 'bulbasaur',
+          height: 7,
+          weight: 69,
+          sprites: { front_default: 'img.png' },
+        }),
+      } as Response;
+    });
 
-    expect(inputElement).toHaveValue('ditto')
+    render(
+      <MemoryRouter initialEntries={['/?page=1']}>
+        <ThemeProvider>
+          <App />
+        </ThemeProvider>
+      </MemoryRouter>
+    );
 
-  }),
-  test('Overwrites existing localStorage value when new search is performed', async() => {
-    const setItemSpy = vi.spyOn(
-      Storage.prototype,
-      'setItem'
-    )
+    await waitFor(() => expect(screen.getByText('bulbasaur')).toBeInTheDocument());
+    await userEvent.click(screen.getByRole('checkbox', { name: /select bulbasaur/i }));
+    expect(screen.getByText(/1 selected item/i)).toBeInTheDocument();
 
-    localStorage.setItem('searchInput', 'ditto')
+    await userEvent.click(screen.getByRole('link', { name: /about/i }));
+    await userEvent.click(screen.getByRole('link', { name: /pokemon search/i }));
+    expect(screen.getByText(/1 selected item/i)).toBeInTheDocument();
 
-    render(<Main/>)
-
-    const inputElement = screen.getByPlaceholderText(/Enter pokemon name.../i)
-
-    const buttonElement = screen.getByDisplayValue(/search/i)
-
-    await user.clear(inputElement)
-
-    await user.type(inputElement, 'pikachu')
-
-    await user.click(buttonElement)
-
-    expect(setItemSpy).toHaveBeenCalledWith('searchInput', 'pikachu')
-
-    expect(localStorage.getItem('searchInput')).toBe('pikachu')
-
-  }),
-  test('Trigger test error ui', async() => {
-  vi.spyOn(console, 'error').mockImplementation(() => {})
-  render(
-    <ErrorBoundary>
-      <Main/>
-    </ErrorBoundary>
-  )
-
-    const errorTestBtn = screen.getByText(/Test Error/i)
-
-    await user.click(errorTestBtn)
-
-    const errorElement = screen.getByText(/The application encountered an unexpected error./i)
-
-    expect(errorElement).toBeInTheDocument()
-
-  }),
-  test('Show error when name is invalid (52, pikachu67)', async() => {
-
-    render(<Main/>)
-
-    const inputElement = screen.getByPlaceholderText(/Enter pokemon name.../i)
-
-    const buttonElement = screen.getByDisplayValue(/search/i)
-
-    await user.type(inputElement, 'pikachu67')
-
-    await user.click(buttonElement)
-
-    const invalidNameError = await screen.findByText(/Incorrect Pokemon name/i)
-
-    expect(invalidNameError).toBeInTheDocument()
-
-  }),
-  test('display error when pokemon is not found', async() => {
-    render(<Main/>)
-
-    const inputElement = screen.getByPlaceholderText(/Enter pokemon name.../i)
-
-    const buttonElement = screen.getByDisplayValue(/search/i)
-
-    await user.type(inputElement, 'pikach')
-
-    await user.click(buttonElement)
-
-    const invalidNameError = await screen.findByText(/Error: Pokemon "pikach" not found/i)
-
-    expect(invalidNameError).toBeInTheDocument()
-  }),
-  test('loads pokemon from API', async () => {
-    mockSuccessFetch()
-
-    render(<Main />)
-
-    const input = screen.getByPlaceholderText(/enter pokemon/i)
-    const button = screen.getByDisplayValue(/search/i)
-
-    await user.type(input, 'pikachu')
-    await user.click(button)
-
-    expect(await screen.findByText('pikachu')).toBeInTheDocument()
-  }),
-  test('handles 404 api error correctly', async () => {
-    mockNotFound()
-
-    render(<Main />)
-
-    const input = screen.getByPlaceholderText(/enter pokemon/i)
-    const button = screen.getByDisplayValue(/search/i)
-
-    await user.type(input, 'pikach')
-    await user.click(button)
-
-    expect(
-      await screen.findByText(/not found/i)
-    ).toBeInTheDocument()
-  }),
-  test('loads initial pokemon list on mount', async () => {
-    mockSuccessFetch()
-
-    render(<Main />)
-
-    expect(await screen.findByText('pikachu')).toBeInTheDocument()
-  })
-})
+    await userEvent.click(screen.getByRole('button', { name: /unselect all/i }));
+    expect(screen.queryByText(/selected item/i)).not.toBeInTheDocument();
+  });
+});

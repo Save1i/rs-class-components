@@ -22,7 +22,8 @@ describe('Rendering Tests', () => {
     const errorElement = screen.getByText(/The application encountered an unexpected error./i)
 
     expect(errorElement).toBeInTheDocument()
-  }),
+  })
+
   test('logs error to console when error occurs', () => {
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
@@ -36,6 +37,4 @@ describe('Rendering Tests', () => {
 
     consoleSpy.mockRestore()
   })
-
-
 })
