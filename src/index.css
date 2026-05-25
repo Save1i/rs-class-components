@@ -10,6 +10,27 @@ body {
   color: #1f2933;
 }
 
+:root[data-theme='light'] {
+  --bg: #f5f7f6;
+  --text: #1f2933;
+  --surface: #fcfcfc;
+  --surface-2: #ffffff;
+  --border: #e5e7eb;
+}
+
+:root[data-theme='dark'] {
+  --bg: #0f1720;
+  --text: #f3f4f6;
+  --surface: #16202a;
+  --surface-2: #1f2937;
+  --border: #324152;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
 .app {
   min-height: 100vh;
   padding: 24px 20px 40px;
@@ -24,7 +45,23 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
   margin-bottom: 24px;
+}
+
+.theme-controler {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.theme-select {
+  border: 1px solid #d9dfdc;
+  border-radius: 10px;
+  padding: 6px 8px;
+  background: var(--surface-2);
+  color: inherit;
 }
 
 .logo,
@@ -124,10 +161,18 @@ body {
 }
 
 .card {
-  background: #fcfcfc;
-  border: 1px solid #e5e7eb;
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 20px;
   padding: 18px;
+}
+
+.card-selection {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
 }
 
 .card-image__wrapper {
@@ -192,10 +237,10 @@ body {
 .details-panel__content {
   position: sticky;
   top: 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border);
   border-radius: 18px;
   padding: 16px;
-  background: #fff;
+  background: var(--surface-2);
 }
 
 .close-details {
@@ -227,6 +272,25 @@ body {
 .back-button {
   display: inline-block;
   margin-top: 12px;
+}
+
+.selected-panel {
+  position: sticky;
+  bottom: 0;
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.selected-panel-actions {
+  display: flex;
+  gap: 8px;
 }
 
 @media (max-width: 900px) {
