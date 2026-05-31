@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Outlet, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import Search from './Search';
 import CardList from './CardList';
 import { useLocalStorage } from '../hooks/useLocalStorage';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 export interface Pokemon {
   id: number;
@@ -27,12 +28,13 @@ interface ListResponse {
 }
 
 const PAGE_LIMIT = 12;
+const QUERY_KEY = ['pokemon'] as const;
 
 async function fetchPokemonByName(name: string): Promise<Pokemon> {
   const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
 
   if (response.status === 404) {
-    throw new Error(`Pokemon "${name}" not found`);
+    throw new Error('Incorrect Pokemon name');
   }
 
   if (!response.ok) {
@@ -83,6 +85,32 @@ async function fetchPokemonPage(page: number): Promise<Pokemon[]> {
   return list;
 }
 
+async function fetchPokemonById(id: string): Promise<Pokemon> {
+  const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
+
+  if (response.status === 404) {
+    throw new Error(`Pokemon "${id}" not found`);
+  }
+
+  if (!response.ok) {
+    throw new Error(`Response status: ${response.status}`);
+  }
+
+  const data = await response.json();
+
+  return {
+    id: data.id,
+    name: data.name,
+    height: data.height,
+    weight: data.weight,
+    image: data.sprites.front_default,
+    baseExperience: data.base_experience,
+    order: data.order,
+    types: data.types?.map((item: { type: { name: string } }) => item.type.name) ?? [],
+    abilities: data.abilities?.map((item: { ability: { name: string } }) => item.ability.name) ?? [],
+  };
+}
+
 function parsePage(rawValue: string | null): number {
   const parsed = Number(rawValue);
 
@@ -99,52 +127,23 @@ function Main() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [savedSearch, setSavedSearch] = useLocalStorage('searchInput', '');
   const [searchInput, setSearchInput] = useState(savedSearch);
-  const [pokemon, setPokemon] = useState<Pokemon[] | null>(null);
-  const [searchError, setSearchError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const queryClient = useQueryClient();
+
+
   const [hasTestError, setHasTestError] = useState(false);
 
   const currentPage = useMemo(() => parsePage(searchParams.get('page')), [searchParams]);
 
-  useEffect(() => {
-    if (!searchParams.get('page')) {
-      setSearchParams({ page: '1' }, { replace: true });
-    }
-  }, [searchParams, setSearchParams]);
-
-  useEffect(() => {
-    const cleanSearchInput = savedSearch.trim().toLowerCase();
-
-    const loadPokemon = async () => {
-      setIsLoading(true);
-      setSearchError('');
-
-      try {
-        if (cleanSearchInput) {
-          if (!/^[a-z]+$/i.test(cleanSearchInput)) {
-            throw new Error('Incorrect Pokemon name');
-          }
-
-          const result = await fetchPokemonByName(cleanSearchInput);
-          setPokemon([result]);
-          return;
-        }
-
-        const pageList = await fetchPokemonPage(currentPage);
-        setPokemon(pageList);
-      } catch (error: unknown) {
-        setPokemon([]);
-
-        if (error instanceof Error) {
-          setSearchError(error.message);
-        }
-      } finally {
-        setIsLoading(false);
+  const pokemonQuery = useQuery({
+    queryKey: [...QUERY_KEY, savedSearch, currentPage],
+    queryFn: async () => {
+      if (savedSearch) {
+        return [await fetchPokemonByName(savedSearch)];
       }
-    };
 
-    loadPokemon();
-  }, [savedSearch, currentPage]);
+      return fetchPokemonPage(currentPage);
+    },
+  });
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -152,9 +151,11 @@ function Main() {
     const cleanValue = searchInput.trim().toLowerCase();
 
     setSavedSearch(cleanValue);
-    setPokemon(null);
     setSearchParams({ page: '1' });
-    navigate('/?page=1', { replace: true });
+  };
+
+  const handleRefresh = () => {
+    void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
   };
 
   const handlePageChange = (nextPage: number) => {
@@ -175,18 +176,24 @@ function Main() {
 
       <Search searchValue={searchInput} onChange={setSearchInput} onSearch={handleSubmit} />
 
-      <button className="search-button" onClick={() => setHasTestError(true)}>
-        Test Error
-      </button>
+      <div className="search-actions">
+        <button className="search-button" onClick={handleRefresh}>
+          Refresh
+        </button>
+
+        <button className="search-button" onClick={() => setHasTestError(true)}>
+          Test Error
+        </button>
+      </div>
 
       <div className={`detail ${location.pathname.includes('/pokemon/') ? 'detail_open' : ''}`}>
         <div className="detail-list">
           <CardList
-            item={pokemon}
-            error={searchError}
-            isLoading={isLoading}
+            item={pokemonQuery.data}
+            error={pokemonQuery.error?.message ?? ''}
+            isLoading={pokemonQuery.isPending}
             page={currentPage}
-            showPagination={!savedSearch.trim() && Array.isArray(pokemon) && pokemon.length > 0}
+            showPagination={true}
             onPageChange={handlePageChange}
           />
         </div>
@@ -201,84 +208,73 @@ function DetailsPanel() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { detailsId } = useParams();
-  const [details, setDetails] = useState<Pokemon | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+  const queryClient = useQueryClient();
+  const detailsQuery = useQuery({
+    queryKey: [...QUERY_KEY, detailsId ?? ''],
+    enabled: Boolean(detailsId),
+    queryFn: async () => {
+      if (!detailsId) {
+        throw new Error('Pokemon details loading error');
+      }
+
+      return fetchPokemonById(detailsId);
+    },
+  });
 
   const page = parsePage(searchParams.get('page'));
-
-  useEffect(() => {
-    const loadDetails = async () => {
-      if (!detailsId) {
-        return;
-      }
-
-      setIsLoading(true);
-      setError('');
-
-      try {
-        const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${detailsId}`);
-
-        if (!response.ok) {
-          throw new Error('Pokemon details loading error');
-        }
-
-        const data = await response.json();
-
-        setDetails({
-          id: data.id,
-          name: data.name,
-          height: data.height,
-          weight: data.weight,
-          image: data.sprites.front_default,
-          baseExperience: data.base_experience,
-          order: data.order,
-          types: data.types?.map((item: { type: { name: string } }) => item.type.name) ?? [],
-          abilities:
-            data.abilities?.map((item: { ability: { name: string } }) => item.ability.name) ?? [],
-        });
-      } catch (loadError: unknown) {
-        if (loadError instanceof Error) {
-          setError(loadError.message);
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadDetails();
-  }, [detailsId]);
 
   const closeDetails = () => {
     navigate(`/?page=${page}`);
   };
 
+  const refreshDetails = () => {
+    void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+  };
+
+  const detailsError = detailsQuery.error instanceof Error ? detailsQuery.error.message : '';
+
+  if (!detailsId) {
+    return null;
+  }
+
   return (
     <aside className="details-panel" onClick={closeDetails}>
       <div className="details-panel__content" onClick={(event) => event.stopPropagation()}>
-        <button className="close-details" onClick={closeDetails}>
-          Close
-        </button>
+        <div className="details-panel__actions">
+          <button className="close-details" onClick={closeDetails}>
+            Close
+          </button>
 
-        {isLoading && <p className="loading">Loading details...</p>}
-        {!isLoading && error && <p className="error">Error: {error}</p>}
+          <button className="search-button" onClick={refreshDetails}>
+            Refresh
+          </button>
+        </div>
 
-        {!isLoading && details && (
+        {detailsQuery.isPending && <p className="loading">Loading details...</p>}
+        {!detailsQuery.isPending && detailsError && <p className="error">Error: {detailsError}</p>}
+
+        {!detailsQuery.isPending && detailsQuery.data && (
           <div className="card">
             <div className="card-image-wrapper">
-              <img className="card-image" src={details.image} alt={details.name} />
+              <img className="card-image" src={detailsQuery.data.image} alt={detailsQuery.data.name} />
             </div>
-            <h2 className="card-name">{details.name}</h2>
+            <h2 className="card-name">{detailsQuery.data.name}</h2>
             <div className="card-info">
-              <p className="card-text">Height: {details.height}</p>
-              <p className="card-text">Weight: {details.weight}</p>
-              <p className="card-text">Base experience: {details.baseExperience ?? 'unknown'}</p>
-              <p className="card-text">Order: {details.order ?? 'unknown'}</p>
+              <p className="card-text">Height: {detailsQuery.data.height}</p>
+              <p className="card-text">Weight: {detailsQuery.data.weight}</p>
+              <p className="card-text">Base experience: {detailsQuery.data.baseExperience ?? 'unknown'}</p>
+              <p className="card-text">Order: {detailsQuery.data.order ?? 'unknown'}</p>
               <p className="card-text">
-                Types: {details.types && details.types.length ? details.types.join(', ') : 'unknown'}
+                Types:{' '}
+                {detailsQuery.data.types && detailsQuery.data.types.length
+                  ? detailsQuery.data.types.join(', ')
+                  : 'unknown'}
               </p>
               <p className="card-text">
-                Abilities: {details.abilities && details.abilities.length ? details.abilities.join(', ') : 'unknown'}
+                Abilities:{' '}
+                {detailsQuery.data.abilities && detailsQuery.data.abilities.length
+                  ? detailsQuery.data.abilities.join(', ')
+                  : 'unknown'}
               </p>
             </div>
           </div>
