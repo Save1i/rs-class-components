@@ -3,7 +3,7 @@ import type { Pokemon } from './Main';
 import { useSelectedItemsStore } from '../store/selectedItemsStore';
 
 interface Props {
-  item: Pokemon[] | null;
+  item: Pokemon[] | null | undefined;
   error: string;
   isLoading: boolean;
   page: number;
@@ -52,7 +52,7 @@ function CardList({ item: pokemon, error: searchError, isLoading, page, showPagi
     return <p className="error">Error: {searchError}</p>;
   }
 
-  if (isLoading || pokemon === null) {
+  if (isLoading || pokemon == null) {
     return <p className="loading">Loading...</p>;
   }
 
