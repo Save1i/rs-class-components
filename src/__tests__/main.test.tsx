@@ -4,6 +4,31 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import App from '../App';
 import { ThemeProvider } from '../context/ThemeContext';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+function renderApp(initialEntries: string[] = ['/?page=1']) {
+const QUERY_CACHE_TIME  = 5 * 60 * 1000;
+
+const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: QUERY_CACHE_TIME ,
+        gcTime: QUERY_CACHE_TIME ,
+        retry: false,
+      },
+    },
+  });
+
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter initialEntries={initialEntries}>
+        <ThemeProvider>
+          <App />
+        </ThemeProvider>
+      </MemoryRouter>
+    </QueryClientProvider>
+  );
+}
 
 describe('App routing and main flow', () => {
   afterEach(() => {
@@ -14,13 +39,7 @@ describe('App routing and main flow', () => {
   test('opens About page from navigation', async () => {
     vi.spyOn(window, 'fetch').mockResolvedValue({ ok: true, json: async () => ({ results: [] }) } as Response);
 
-    render(
-      <MemoryRouter initialEntries={['/?page=1']}>
-        <ThemeProvider>
-          <App />
-        </ThemeProvider>
-      </MemoryRouter>
-    );
+    renderApp();
 
     expect(screen.getByLabelText(/theme/i)).toBeInTheDocument();
     await userEvent.click(screen.getByRole('link', { name: /about/i }));
@@ -28,13 +47,7 @@ describe('App routing and main flow', () => {
   });
 
   test('shows 404 page on unknown route', () => {
-    render(
-      <MemoryRouter initialEntries={['/unknown']}>
-        <ThemeProvider>
-          <App />
-        </ThemeProvider>
-      </MemoryRouter>
-    );
+    renderApp(['/unknown']);
 
     expect(screen.getByText('404')).toBeInTheDocument();
     expect(screen.getByText(/Page not found/i)).toBeInTheDocument();
@@ -47,13 +60,7 @@ describe('App routing and main flow', () => {
       json: async () => ({ id: 25, name: 'pikachu', height: 4, weight: 60, sprites: { front_default: 'img.png' } }),
     } as Response);
 
-    render(
-      <MemoryRouter initialEntries={['/?page=1']}>
-        <ThemeProvider>
-          <App />
-        </ThemeProvider>
-      </MemoryRouter>
-    );
+    renderApp();
 
     await userEvent.type(screen.getByPlaceholderText(/Enter pokemon name.../i), ' Pikachu  ');
     await userEvent.click(screen.getByDisplayValue(/search/i));
@@ -62,13 +69,9 @@ describe('App routing and main flow', () => {
   });
 
   test('shows validation error for invalid pokemon name', async () => {
-    render(
-      <MemoryRouter initialEntries={['/?page=1']}>
-        <ThemeProvider>
-          <App />
-        </ThemeProvider>
-      </MemoryRouter>
-    );
+    vi.spyOn(window, 'fetch').mockResolvedValue({ ok: false, status: 404 } as Response);
+
+    renderApp();
 
     await userEvent.type(screen.getByPlaceholderText(/Enter pokemon name.../i), 'pikachu67');
     await userEvent.click(screen.getByDisplayValue(/search/i));
@@ -116,13 +119,7 @@ describe('App routing and main flow', () => {
       } as Response;
     });
 
-    render(
-      <MemoryRouter initialEntries={['/?page=1']}>
-        <ThemeProvider>
-          <App />
-        </ThemeProvider>
-      </MemoryRouter>
-    );
+    renderApp();
 
     await waitFor(() => expect(screen.getByText('bulbasaur')).toBeInTheDocument());
     await userEvent.click(screen.getByRole('link', { name: /bulbasaur/i }));
@@ -152,16 +149,10 @@ describe('App routing and main flow', () => {
       } as Response;
     });
 
-    render(
-      <MemoryRouter initialEntries={['/?page=1']}>
-        <ThemeProvider>
-          <App />
-        </ThemeProvider>
-      </MemoryRouter>
-    );
+    renderApp();
 
     await waitFor(() => expect(screen.getByText('bulbasaur')).toBeInTheDocument());
-    await userEvent.click(screen.getByRole('checkbox', { name: /select bulbasaur/i }));
+    await userEvent.click(screen.getByLabelText('select bulbasaur'));
     expect(screen.getByText(/1 selected item/i)).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('link', { name: /about/i }));
@@ -170,5 +161,41 @@ describe('App routing and main flow', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /unselect all/i }));
     expect(screen.queryByText(/selected item/i)).not.toBeInTheDocument();
+  });
+
+  test('reuses cached pokemon list when returning to a page', async () => {
+    const fetchMock = vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
+      const url = String(input);
+
+      if (url.includes('/pokemon?limit=')) {
+        return {
+          ok: true,
+          json: async () => ({ results: [{ name: 'bulbasaur', url: 'https://pokeapi.co/api/v2/pokemon/1' }] }),
+        } as Response;
+      }
+
+      return {
+        ok: true,
+        json: async () => ({
+          id: 1,
+          name: 'bulbasaur',
+          height: 7,
+          weight: 69,
+          sprites: { front_default: 'img.png' },
+        }),
+      } as Response;
+    });
+
+    renderApp();
+
+    await waitFor(() => expect(screen.getByText('bulbasaur')).toBeInTheDocument());
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+
+    await userEvent.click(screen.getByRole('button', { name: /next/i }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(4));
+    await userEvent.click(screen.getByRole('button', { name: /prev/i }));
+
+    expect(screen.getByText('bulbasaur')).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledTimes(4);
   });
 });
