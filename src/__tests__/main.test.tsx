@@ -152,7 +152,7 @@ describe('App routing and main flow', () => {
     renderApp();
 
     await waitFor(() => expect(screen.getByText('bulbasaur')).toBeInTheDocument());
-    await userEvent.click(screen.getByRole('checkbox', { name: /select bulbasaur/i }));
+    await userEvent.click(screen.getByLabelText('select bulbasaur'));
     expect(screen.getByText(/1 selected item/i)).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('link', { name: /about/i }));
