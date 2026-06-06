@@ -65,6 +65,8 @@ function CardList({ item: pokemon, error: searchError, isLoading, page, showPagi
               <input
                 checked={selectedItems.some((item) => item.id === el.id)}
                 type="checkbox"
+                name={`select ${el.name}`}
+                aria-label={`select ${el.name}`}
                 onChange={() => toggleItem(el)}
               />
             </div>
