@@ -28,6 +28,18 @@ export default function UncontrolledForm({ countries, onClose, onSubmitSuccess }
   const formRef = useRef<HTMLFormElement>(null);
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const [showPassword, SetshowPassword] = useState<string>('password')
+
+  const onClickToshowPassword = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    if(showPassword == "password") {
+      SetshowPassword("text");
+    }else {
+      SetshowPassword("password");
+    }
+  }
+
   const schema = createFormSchema(countries);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -86,18 +98,11 @@ export default function UncontrolledForm({ countries, onClose, onSubmitSuccess }
           <label className="field__label" htmlFor={`${formId}-country`}>
             Country
           </label>
-          <input
-            id={`${formId}-country`}
-            className="field__control"
-            name="country"
-            list={`${formId}-countries`}
-            placeholder="Start typing..."
-          />
-          <datalist id={`${formId}-countries`}>
+          <select className='field__control' name="country">
             {countries.map((country) => (
-              <option key={country} value={country} />
+              <option key={country} value={country}>{country}</option>
             ))}
-          </datalist>
+          </select>
           <FieldError message={errors.country} />
         </div>
 
@@ -127,6 +132,7 @@ export default function UncontrolledForm({ countries, onClose, onSubmitSuccess }
             type="password"
             onChange={handlePasswordChange}
           />
+          <button className='password-show' onClick={onClickToshowPassword}>👁️</button>
           <FieldError message={errors.password} />
         </div>
 
