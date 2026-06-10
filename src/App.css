@@ -91,6 +91,7 @@
 }
 
 .field {
+  position: relative;
   display: grid;
   gap: 8px;
 }
@@ -140,6 +141,18 @@
   padding: 9px 12px;
 }
 
+.password-show {
+  position: absolute;
+  content: '';
+  bottom: 32px;
+  right: 12px;
+  padding: 4px;
+
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
 .field-error {
   min-height: 1rem;
   color: #b42318;
@@ -184,7 +197,7 @@
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  padding-top: 4px;
+  padding-top: 12px;
   border-top: 1px solid var(--border);
 }
 
