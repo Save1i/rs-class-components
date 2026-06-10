@@ -94,7 +94,7 @@ export function createFormSchema(countries: readonly string[]) {
     .superRefine((values, ctx) => {
       if (values.password !== values.confirmPassword) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
           path: ['confirmPassword'],
           message: 'Passwords must match',
         });
@@ -102,7 +102,7 @@ export function createFormSchema(countries: readonly string[]) {
 
       if (!countries.includes(values.country)) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
           path: ['country'],
           message: 'Choose a country from the list',
         });
@@ -113,7 +113,7 @@ export function createFormSchema(countries: readonly string[]) {
 
       if (imageError) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
           path: ['imageFile'],
           message: imageError,
         });
