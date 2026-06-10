@@ -148,10 +148,10 @@ export default function UncontrolledForm({ countries, onClose, onSubmitSuccess }
       <PasswordStrength password={password} />
 
       <div className="form__actions">
-        <button className="button button--ghost" type="button" onClick={onClose}>
+        <button className="search-button" type="button" onClick={onClose}>
           Cancel
         </button>
-        <button className="button button--primary" type="submit">
+        <button className="search-button" type="submit">
           Submit uncontrolled
         </button>
       </div>
