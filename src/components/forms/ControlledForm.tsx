@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useForm, useWatch, type FieldError, type Resolver } from 'react-hook-form';
 import type { FormSubmission, FormValues } from '../../types/forms';
 import { buildSubmission, createFormSchema, fileLikeToFile, fileToBase64 } from '../../utils/forms';
@@ -28,6 +28,17 @@ function mapErrorsToFormState(issues: Array<{ path: ReadonlyArray<PropertyKey>; 
 
 export default function ControlledForm({ countries, onClose, onSubmitSuccess }: ControlledFormProps) {
   const schema = useMemo(() => createFormSchema(countries), [countries]);
+
+  const [showPassword, SetshowPassword] = useState<string>('password')
+
+  const onClickToshowPassword = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    if(showPassword == "password") {
+      SetshowPassword("text");
+    }else {
+      SetshowPassword("password");
+    }
+  }
 
   const resolver: Resolver<FormValues> = async (values) => {
     const parsed = schema.safeParse(values);
@@ -94,18 +105,11 @@ export default function ControlledForm({ countries, onClose, onSubmitSuccess }: 
           <label className="field__label" htmlFor="hook-country">
             Country
           </label>
-          <input
-            id="hook-country"
-            className="field__control"
-            list="hook-countries"
-            placeholder="Start typing..."
-            {...register('country')}
-          />
-          <datalist id="hook-countries">
+          <select className='field__control' {...register("country", {required: true})}>
             {countries.map((country) => (
-              <option key={country} value={country} />
+              <option key={country} value={country}>{country}</option>
             ))}
-          </datalist>
+          </select>
           <FieldErrorMessage message={errors.country?.message} />
         </div>
 
@@ -131,9 +135,10 @@ export default function ControlledForm({ countries, onClose, onSubmitSuccess }: 
             id="hook-password"
             className="field__control"
             autoComplete="new-password"
-            type="password"
+            type={showPassword}
             {...register('password')}
           />
+          <button className='password-show' onClick={onClickToshowPassword}>👁️</button>
           <FieldErrorMessage message={errors.password?.message} />
         </div>
 
@@ -155,10 +160,10 @@ export default function ControlledForm({ countries, onClose, onSubmitSuccess }: 
       <PasswordStrength password={passwordValue} />
 
       <div className="form__actions">
-        <button className="button button--ghost" type="button" onClick={onClose}>
+        <button className="search-button" type="button" onClick={onClose}>
           Cancel
         </button>
-        <button className="button button--primary" type="submit" disabled={!isValid || isSubmitting}>
+        <button className="search-button" type="submit" disabled={!isValid || isSubmitting}>
           Submit RHF
         </button>
       </div>
