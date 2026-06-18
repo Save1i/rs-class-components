@@ -90,6 +90,16 @@ body {
   margin-bottom: 32px;
 }
 
+.search-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.details-panel__actions {
+  display: flex;
+  gap: 12px;
+}
+
 .search-form {
   margin-bottom: 24px;
 }

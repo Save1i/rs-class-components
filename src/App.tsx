@@ -3,6 +3,7 @@ import { Link, NavLink, Route, Routes } from 'react-router-dom';
 import ErrorBoundary from './components/ErrorBoundary';
 import Main from './components/Main';
 import AboutPage from './components/pages/AboutPage';
+import FormsPage from './components/pages/FormsPage';
 import NotFoundPage from './components/pages/NotFoundPage';
 import { useTheme } from './context/ThemeContext';
 
@@ -17,9 +18,12 @@ function App() {
             <Link className="logo" to="/">
               Pokemon Search
             </Link>
-            <nav>
+            <nav className="nav">
               <NavLink className="link" to="/about">
                 About
+              </NavLink>
+              <NavLink className="link" to="/forms">
+                Forms
               </NavLink>
             </nav>
             <label className="theme-controler">
@@ -40,6 +44,7 @@ function App() {
               <Route path="pokemon/:detailsId" element={<Main.Details />} />
             </Route>
             <Route path="/about" element={<AboutPage />} />
+            <Route path="/forms" element={<FormsPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </div>
