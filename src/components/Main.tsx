@@ -1,6 +1,10 @@
+'use client';
+
 import { useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
-import { Outlet, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Search from './Search';
 import CardList from './CardList';
 import { useLocalStorage } from '../hooks/useLocalStorage';
@@ -58,7 +62,7 @@ async function fetchPokemonPage(page: number): Promise<Pokemon[]> {
 
   if (!response.ok) {
     throw new Error(`Response status: ${response.status}`);
-  }
+  } 
 
   const data: ListResponse = await response.json();
 
@@ -122,17 +126,20 @@ function parsePage(rawValue: string | null): number {
 }
 
 function Main() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [searchParams, setSearchParams] = useSearchParams();
+const router = useRouter();
+
+  const searchParams = useSearchParams();
   const [savedSearch, setSavedSearch] = useLocalStorage('searchInput', '');
   const [searchInput, setSearchInput] = useState(savedSearch);
   const queryClient = useQueryClient();
+
+  const pathName = usePathname();
 
 
   const [hasTestError, setHasTestError] = useState(false);
 
   const currentPage = useMemo(() => parsePage(searchParams.get('page')), [searchParams]);
+
 
   const pokemonQuery = useQuery({
     queryKey: [...QUERY_KEY, savedSearch, currentPage],
@@ -151,7 +158,7 @@ function Main() {
     const cleanValue = searchInput.trim().toLowerCase();
 
     setSavedSearch(cleanValue);
-    setSearchParams({ page: '1' });
+    // searchParams({ page: '1' });
   };
 
   const handleRefresh = () => {
@@ -159,10 +166,13 @@ function Main() {
   };
 
   const handlePageChange = (nextPage: number) => {
-    setSearchParams({ page: String(nextPage) });
+    const params = new URLSearchParams(searchParams);
+    params.set("page", String(nextPage));
 
-    if (location.pathname.includes('/pokemon/')) {
-      navigate(`/?page=${nextPage}`);
+    router.push(`?${params.toString()}`);
+
+    if (pathName.includes('/pokemon/')) {
+      router.push(`/?page=${nextPage}`);
     }
   };
 
@@ -186,7 +196,7 @@ function Main() {
         </button>
       </div>
 
-      <div className={`detail ${location.pathname.includes('/pokemon/') ? 'detail_open' : ''}`}>
+      <div className={`detail ${pathName.includes('/pokemon/') ? 'detail_open' : ''}`}>
         <div className="detail-list">
           <CardList
             item={pokemonQuery.data}
@@ -198,16 +208,17 @@ function Main() {
           />
         </div>
 
-        <Outlet />
+        {/* <Outlet /> */}
       </div>
     </>
   );
 }
 
-function DetailsPanel() {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+export function DetailsPanel() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { detailsId } = useParams();
+
   const queryClient = useQueryClient();
   const detailsQuery = useQuery({
     queryKey: [...QUERY_KEY, detailsId ?? ''],
@@ -217,14 +228,14 @@ function DetailsPanel() {
         throw new Error('Pokemon details loading error');
       }
 
-      return fetchPokemonById(detailsId);
+      return fetchPokemonById(String(detailsId));
     },
   });
 
   const page = parsePage(searchParams.get('page'));
 
   const closeDetails = () => {
-    navigate(`/?page=${page}`);
+    router.push(`/?page=${page}`);
   };
 
   const refreshDetails = () => {

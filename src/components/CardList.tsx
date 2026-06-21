@@ -1,6 +1,7 @@
-import { Link } from 'react-router-dom';
+
 import type { Pokemon } from './Main';
 import { useSelectedItemsStore } from '../store/selectedItemsStore';
+import Link from 'next/link';
 
 interface Props {
   item: Pokemon[] | null | undefined;
@@ -70,7 +71,7 @@ function CardList({ item: pokemon, error: searchError, isLoading, page, showPagi
                 onChange={() => toggleItem(el)}
               />
             </div>
-            <Link className="card-link" to={`/pokemon/${el.id}?page=${page}`}>
+            <Link className="card-link" href={`/pokemon/${el.id}?page=${page}`}>
               <div className="card-image__wrapper">
                 <img className="card-image" src={el.image} alt={el.name} />
               </div>
