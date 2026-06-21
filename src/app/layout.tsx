@@ -1,6 +1,6 @@
 import '../index.css';
 import { Metadata } from 'next';
-import Header from '../components/Header';
+import {getLocale} from 'next-intl/server';
 import { ClientOnly } from './client';
 
 export const metadata: Metadata = {
@@ -8,17 +8,18 @@ export const metadata: Metadata = {
   description: 'My App for RS School course',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const locale = await getLocale();
+
   return (
-    <html lang="en">
+    <html lang={locale}>
       <body>
         <ClientOnly>
           <div id="root">
-            <Header />
             {children}
           </div>
         </ClientOnly>
