@@ -1,5 +1,57 @@
 {
+  "Header": {
+    "brand": "Pokemon Search",
+    "about": "About",
+    "themeLabel": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "languageLabel": "Language",
+    "languageEn": "English",
+    "languageRu": "Russian"
+  },
   "HomePage": {
-    "title": "Hello world!"
+    "title": "Pokemon Search",
+    "refresh": "Refresh",
+    "testError": "Test Error"
+  },
+  "Search": {
+    "placeholder": "Enter pokemon name...",
+    "submit": "Search",
+    "hint": "The search is performed by the full name of the Pokemon"
+  },
+  "CardList": {
+    "error": "Error: {message}",
+    "loading": "Loading...",
+    "selectedCount": "{count, plural, one {# selected item} other {# selected items}}",
+    "unselectAll": "Unselect all",
+    "download": "Download",
+    "previous": "Prev",
+    "next": "Next",
+    "page": "Page {page}",
+    "height": "Height: {value}",
+    "weight": "Weight: {value}"
+  },
+  "Details": {
+    "close": "Close",
+    "refresh": "Refresh",
+    "loading": "Loading details...",
+    "error": "Error: {message}",
+    "height": "Height: {value}",
+    "weight": "Weight: {value}",
+    "baseExperience": "Base experience: {value}",
+    "order": "Order: {value}",
+    "types": "Types: {value}",
+    "abilities": "Abilities: {value}",
+    "unknown": "unknown"
+  },
+  "AboutPage": {
+    "title": "About",
+    "author": "Author:",
+    "course": "Course:"
+  },
+  "NotFound": {
+    "title": "404",
+    "message": "Page not found.",
+    "back": "Back to main page"
   }
 }
