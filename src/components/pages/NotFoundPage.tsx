@@ -1,13 +1,15 @@
-import Link from "next/link";
+import {getTranslations} from 'next-intl/server';
+import {Link} from '../../i18n/navigation';
 
+async function NotFoundPage() {
+  const t = await getTranslations('NotFound');
 
-function NotFoundPage() {
   return (
     <section className="not-found__page">
-      <h1 className="title">404</h1>
-      <p className="about-text">Page not found.</p>
-      <Link className="search-button back-button" href="/?page=1">
-        Back to main page
+      <h1 className="title">{t('title')}</h1>
+      <p className="about-text">{t('message')}</p>
+      <Link className="search-button back-button" href="/">
+        {t('back')}
       </Link>
     </section>
   );

@@ -1,5 +1,6 @@
-import Main from '../components/Main';
+import {redirect} from 'next/navigation';
+import {defaultLocale} from '../config';
 
 export default function Page() {
-  return <Main />;
+  redirect(`/${defaultLocale}`);
 }

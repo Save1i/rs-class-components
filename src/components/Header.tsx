@@ -1,37 +1,41 @@
 'use client';
 
-import Link from "next/link";
-import { useTheme } from "../context/ThemeContext";
-
-  
-
-
+import {useTranslations} from 'next-intl';
+import {Link} from '../i18n/navigation';
+import {useTheme} from '../context/ThemeContext';
+import LanguageSwitcher from './LanguageSwitcher';
 
 export const Header = () => {
-  const { theme, setTheme } = useTheme();
+  const t = useTranslations('Header');
+  const {theme, setTheme} = useTheme();
+
   return (
     <header className="header">
       <Link className="logo" href="/">
-        Pokemon Search
+        {t('brand')}
       </Link>
-      <nav>
+
+      <nav className="header-nav">
         <Link className="link" href="/about">
-          About
+          {t('about')}
         </Link>
       </nav>
+
+      <LanguageSwitcher />
+
       <label className="theme-controler">
-        Theme:
+        <span>{t('themeLabel')}</span>
         <select
           className="theme-select"
           value={theme}
           onChange={(event) => setTheme(event.target.value as 'light' | 'dark')}
         >
-          <option value="light">Light</option>
-          <option value="dark">Dark</option>
+          <option value="light">{t('themeLight')}</option>
+          <option value="dark">{t('themeDark')}</option>
         </select>
       </label>
     </header>
-  )
-}
+  );
+};
 
-export default Header
+export default Header;
