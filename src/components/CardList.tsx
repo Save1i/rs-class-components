@@ -3,6 +3,8 @@ import type {Pokemon} from './Main';
 import {useSelectedItemsStore} from '../store/selectedItemsStore';
 import {Link} from '../i18n/navigation';
 
+import Image from 'next/image';
+
 interface Props {
   item: Pokemon[] | null | undefined;
   error: string;
@@ -17,38 +19,30 @@ function CardList({item: pokemon, error: searchError, isLoading, page, showPagin
   const selectedItems = useSelectedItemsStore((state) => state.selectedItems);
   const toggleItem = useSelectedItemsStore((state) => state.toggleItem);
   const clearAll = useSelectedItemsStore((state) => state.clearAll);
+  
 
-  const downloadSelectedAsCsv = () => {
-    if (!selectedItems.length) {
-      return;
-    }
+const downloadSelectedAsCsv = async () => {
+  const response = await fetch('/api/export-csv', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(selectedItems),
+  });
 
-    const rows = selectedItems.map((item) =>
-      [
-        item.id,
-        item.name,
-        item.height,
-        item.weight,
-        item.baseExperience ?? '',
-        item.order ?? '',
-        `https://pokeapi.co/api/v2/pokemon/${item.id}`
-      ]
-        .map((value) => `"${String(value).replace(/"/g, '""')}"`)
-        .join(',')
-    );
+  const blob = await response.blob();
 
-    const header = '"id","name","height","weight","base_experience","order","details_url"';
-    const csvText = [header, ...rows].join('\n');
-    const blob = new Blob([csvText], {type: 'text/csv;charset=utf-8;'});
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `${selectedItems.length}_items.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+
+  a.href = url;
+  a.download = `${selectedItems.length}_items.csv`;
+
+  a.click();
+
+  URL.revokeObjectURL(url);
+};
 
   if (searchError) {
     return <p className="error">{t('error', {message: searchError})}</p>;
@@ -74,14 +68,14 @@ function CardList({item: pokemon, error: searchError, isLoading, page, showPagin
             </div>
             <Link className="card-link" href={`/pokemon/${el.id}?page=${page}`}>
               <div className="card-image__wrapper">
-                <img className="card-image" src={el.image} alt={el.name} />
+                <Image src={el.image} alt={el.name} height={100} width={100} />
               </div>
 
               <h2 className="card-name">{el.name}</h2>
 
               <div className="card-info">
-                <p className="card-text">{t('height', {value: el.height})}</p>
-                <p className="card-text">{t('weight', {value: el.weight})}</p>
+                <p className="card-text">{t('height', { value: el.height })}</p>
+                <p className="card-text">{t('weight', { value: el.weight })}</p>
               </div>
             </Link>
           </li>
@@ -90,7 +84,7 @@ function CardList({item: pokemon, error: searchError, isLoading, page, showPagin
 
       {selectedItems.length > 0 && (
         <div className="selected-panel">
-          <p>{t('selectedCount', {count: selectedItems.length})}</p>
+          <p>{t('selectedCount', { count: selectedItems.length })}</p>
           <div className="selected-panel-actions">
             <button className="pagination-button" onClick={clearAll}>
               {t('unselectAll')}
@@ -104,11 +98,18 @@ function CardList({item: pokemon, error: searchError, isLoading, page, showPagin
 
       {showPagination && (
         <div className="pagination">
-          <button className="pagination-button" disabled={page === 1} onClick={() => onPageChange(page - 1)}>
+          <button
+            className="pagination-button"
+            disabled={page === 1}
+            onClick={() => onPageChange(page - 1)}
+          >
             {t('previous')}
           </button>
-          <span className="pagination-page">{t('page', {page})}</span>
-          <button className="pagination-button" onClick={() => onPageChange(page + 1)}>
+          <span className="pagination-page">{t('page', { page })}</span>
+          <button
+            className="pagination-button"
+            onClick={() => onPageChange(page + 1)}
+          >
             {t('next')}
           </button>
         </div>
