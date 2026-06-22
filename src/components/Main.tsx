@@ -8,6 +8,7 @@ import Search from './Search';
 import CardList from './CardList';
 import {useLocalStorage} from '../hooks/useLocalStorage';
 import {useQuery, useQueryClient} from '@tanstack/react-query';
+import Image from 'next/image';
 
 export interface Pokemon {
   id: number;
@@ -246,7 +247,10 @@ export function DetailsPanel() {
 
   return (
     <aside className="details-panel" onClick={closeDetails}>
-      <div className="details-panel__content" onClick={(event) => event.stopPropagation()}>
+      <div
+        className="details-panel__content"
+        onClick={(event) => event.stopPropagation()}
+      >
         <div className="details-panel__actions">
           <button className="close-details" onClick={closeDetails}>
             {t('close')}
@@ -258,35 +262,52 @@ export function DetailsPanel() {
         </div>
 
         {detailsQuery.isPending && <p className="loading">{t('loading')}</p>}
-        {!detailsQuery.isPending && detailsError && <p className="error">{t('error', {message: detailsError})}</p>}
+        {!detailsQuery.isPending && detailsError && (
+          <p className="error">{t('error', { message: detailsError })}</p>
+        )}
 
         {!detailsQuery.isPending && detailsQuery.data && (
           <div className="card">
             <div className="card-image-wrapper">
-              <img className="card-image" src={detailsQuery.data.image} alt={detailsQuery.data.name} />
+              <Image
+                src={detailsQuery.data.image}
+                alt={detailsQuery.data.name}
+                height={100}
+                width={100}
+                className="card-image"
+              />
             </div>
             <h2 className="card-name">{detailsQuery.data.name}</h2>
             <div className="card-info">
-              <p className="card-text">{t('height', {value: detailsQuery.data.height})}</p>
-              <p className="card-text">{t('weight', {value: detailsQuery.data.weight})}</p>
               <p className="card-text">
-                {t('baseExperience', {value: detailsQuery.data.baseExperience ?? t('unknown')})}
+                {t('height', { value: detailsQuery.data.height })}
               </p>
               <p className="card-text">
-                {t('order', {value: detailsQuery.data.order ?? t('unknown')})}
+                {t('weight', { value: detailsQuery.data.weight })}
+              </p>
+              <p className="card-text">
+                {t('baseExperience', {
+                  value: detailsQuery.data.baseExperience ?? t('unknown'),
+                })}
+              </p>
+              <p className="card-text">
+                {t('order', { value: detailsQuery.data.order ?? t('unknown') })}
               </p>
               <p className="card-text">
                 {t('types', {
-                  value: detailsQuery.data.types && detailsQuery.data.types.length
-                    ? detailsQuery.data.types.join(', ')
-                    : t('unknown')
+                  value:
+                    detailsQuery.data.types && detailsQuery.data.types.length
+                      ? detailsQuery.data.types.join(', ')
+                      : t('unknown'),
                 })}
               </p>
               <p className="card-text">
                 {t('abilities', {
-                  value: detailsQuery.data.abilities && detailsQuery.data.abilities.length
-                    ? detailsQuery.data.abilities.join(', ')
-                    : t('unknown')
+                  value:
+                    detailsQuery.data.abilities &&
+                    detailsQuery.data.abilities.length
+                      ? detailsQuery.data.abilities.join(', ')
+                      : t('unknown'),
                 })}
               </p>
             </div>

@@ -4,6 +4,8 @@ import {useLocale, useTranslations} from 'next-intl';
 import {useParams, useRouter, useSearchParams} from 'next/navigation';
 import {useQuery, useQueryClient} from '@tanstack/react-query';
 
+import Image from 'next/image';
+
 const QUERY_KEY = ['pokemon'] as const;
 
 async function fetchPokemonById(id: string) {
@@ -73,7 +75,10 @@ export default function DetailsPanel() {
 
   return (
     <aside className="details-panel" onClick={close}>
-      <div className="details-panel__content" onClick={(event) => event.stopPropagation()}>
+      <div
+        className="details-panel__content"
+        onClick={(event) => event.stopPropagation()}
+      >
         <div className="details-panel__actions">
           <button className="close-details" onClick={close}>
             {t('close')}
@@ -85,29 +90,50 @@ export default function DetailsPanel() {
 
         {detailsQuery.isPending && <p className="loading">{t('loading')}</p>}
         {!detailsQuery.isPending && detailsQuery.error instanceof Error && (
-          <p className="error">{t('error', {message: detailsQuery.error.message})}</p>
+          <p className="error">
+            {t('error', { message: detailsQuery.error.message })}
+          </p>
         )}
 
         {!detailsQuery.isPending && data && (
           <div className="card">
             <div className="card-image__wrapper">
-              <img className="card-image" src={data.sprites.front_default} alt={data.name} />
+              <Image
+                src={data.sprites.front_default}
+                alt={data.name}
+                height={100}
+                width={100}
+                className="card-image"
+              />
             </div>
             <h2 className="card-name">{data.name}</h2>
             <div className="card-info">
-              <p className="card-text">{t('height', {value: data.height})}</p>
-              <p className="card-text">{t('weight', {value: data.weight})}</p>
-              <p className="card-text">{t('baseExperience', {value: data.base_experience ?? t('unknown')})}</p>
-              <p className="card-text">{t('order', {value: data.order ?? t('unknown')})}</p>
+              <p className="card-text">{t('height', { value: data.height })}</p>
+              <p className="card-text">{t('weight', { value: data.weight })}</p>
+              <p className="card-text">
+                {t('baseExperience', {
+                  value: data.base_experience ?? t('unknown'),
+                })}
+              </p>
+              <p className="card-text">
+                {t('order', { value: data.order ?? t('unknown') })}
+              </p>
               <p className="card-text">
                 {t('types', {
-                  value: data.types && data.types.length ? data.types.map((item) => item.type.name).join(', ') : t('unknown')
+                  value:
+                    data.types && data.types.length
+                      ? data.types.map((item) => item.type.name).join(', ')
+                      : t('unknown'),
                 })}
               </p>
               <p className="card-text">
                 {t('abilities', {
                   value:
-                    data.abilities && data.abilities.length ? data.abilities.map((item) => item.ability.name).join(', ') : t('unknown')
+                    data.abilities && data.abilities.length
+                      ? data.abilities
+                          .map((item) => item.ability.name)
+                          .join(', ')
+                      : t('unknown'),
                 })}
               </p>
             </div>
