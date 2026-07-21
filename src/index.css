@@ -50,10 +50,26 @@ body {
   margin-bottom: 24px;
 }
 
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .theme-controler {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.language-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.language-control__label {
+  font-size: 14px;
 }
 
 .theme-select {
@@ -92,6 +108,13 @@ body {
 
 .search-form {
   margin-bottom: 24px;
+}
+
+.search-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
 .search-form-content {
@@ -215,6 +238,13 @@ body {
   align-items: center;
   gap: 12px;
   margin-top: 16px;
+}
+
+.details-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
 .pagination-button {

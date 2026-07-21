@@ -1,4 +1,5 @@
-import type { FormEvent } from 'react';
+import type {FormEvent} from 'react';
+import {useTranslations} from 'next-intl';
 
 interface Props {
   onSearch: (event: FormEvent) => void;
@@ -6,7 +7,9 @@ interface Props {
   searchValue: string;
 }
 
-function Search({ onSearch, onChange, searchValue }: Props) {
+function Search({onSearch, onChange, searchValue}: Props) {
+  const t = useTranslations('Search');
+
   return (
     <div className="search-form">
       <form className="search-form-content" onSubmit={onSearch}>
@@ -15,13 +18,13 @@ function Search({ onSearch, onChange, searchValue }: Props) {
           type="text"
           value={searchValue}
           onChange={(event) => onChange(event.target.value)}
-          placeholder="Enter pokemon name..."
+          placeholder={t('placeholder')}
         />
 
-        <input className="search-button" type="submit" value="search" />
+        <input className="search-button" type="submit" value={t('submit')} />
       </form>
 
-      <p className="text-info">The search is performed by the full name of the Pokemon</p>
+      <p className="text-info">{t('hint')}</p>
     </div>
   );
 }

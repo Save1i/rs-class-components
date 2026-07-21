@@ -1,10 +1,14 @@
-import { useMemo, useState } from 'react';
-import type { FormEvent } from 'react';
-import { Outlet, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+'use client';
+
+import {useMemo, useState} from 'react';
+import type {FormEvent} from 'react';
+import {useLocale, useTranslations} from 'next-intl';
+import {usePathname, useSearchParams, useRouter, useParams} from 'next/navigation';
 import Search from './Search';
 import CardList from './CardList';
-import { useLocalStorage } from '../hooks/useLocalStorage';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import {useLocalStorage} from '../hooks/useLocalStorage';
+import {useQuery, useQueryClient} from '@tanstack/react-query';
+import Image from 'next/image';
 
 export interface Pokemon {
   id: number;
@@ -19,7 +23,7 @@ export interface Pokemon {
 }
 
 interface ResultArr {
-  name: string; 
+  name: string;
   url: string;
 }
 
@@ -48,7 +52,7 @@ async function fetchPokemonByName(name: string): Promise<Pokemon> {
     name: data.name,
     height: data.height,
     weight: data.weight,
-    image: data.sprites.front_default,
+    image: data.sprites.front_default
   };
 }
 
@@ -77,7 +81,7 @@ async function fetchPokemonPage(page: number): Promise<Pokemon[]> {
         name: details.name,
         height: details.height,
         weight: details.weight,
-        image: details.sprites.front_default,
+        image: details.sprites.front_default
       };
     })
   );
@@ -106,8 +110,8 @@ async function fetchPokemonById(id: string): Promise<Pokemon> {
     image: data.sprites.front_default,
     baseExperience: data.base_experience,
     order: data.order,
-    types: data.types?.map((item: { type: { name: string } }) => item.type.name) ?? [],
-    abilities: data.abilities?.map((item: { ability: { name: string } }) => item.ability.name) ?? [],
+    types: data.types?.map((item: {type: {name: string}}) => item.type.name) ?? [],
+    abilities: data.abilities?.map((item: {ability: {name: string}}) => item.ability.name) ?? []
   };
 }
 
@@ -122,14 +126,14 @@ function parsePage(rawValue: string | null): number {
 }
 
 function Main() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const t = useTranslations('HomePage');
+  const locale = useLocale();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathName = usePathname();
   const [savedSearch, setSavedSearch] = useLocalStorage('searchInput', '');
   const [searchInput, setSearchInput] = useState(savedSearch);
   const queryClient = useQueryClient();
-
-
   const [hasTestError, setHasTestError] = useState(false);
 
   const currentPage = useMemo(() => parsePage(searchParams.get('page')), [searchParams]);
@@ -142,7 +146,7 @@ function Main() {
       }
 
       return fetchPokemonPage(currentPage);
-    },
+    }
   });
 
   const handleSubmit = (event: FormEvent) => {
@@ -151,19 +155,22 @@ function Main() {
     const cleanValue = searchInput.trim().toLowerCase();
 
     setSavedSearch(cleanValue);
-    setSearchParams({ page: '1' });
   };
 
   const handleRefresh = () => {
-    void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+    void queryClient.invalidateQueries({queryKey: QUERY_KEY});
   };
 
   const handlePageChange = (nextPage: number) => {
-    setSearchParams({ page: String(nextPage) });
-
-    if (location.pathname.includes('/pokemon/')) {
-      navigate(`/?page=${nextPage}`);
+    if (pathName.includes('/pokemon/')) {
+      router.push(`/${locale}?page=${nextPage}`);
+      return;
     }
+
+    const params = new URLSearchParams(searchParams);
+    params.set('page', String(nextPage));
+
+    router.push(`?${params.toString()}`);
   };
 
   if (hasTestError) {
@@ -172,21 +179,21 @@ function Main() {
 
   return (
     <>
-      <h1 className="title">Pokemon Search</h1>
+      <h1 className="title">{t('title')}</h1>
 
       <Search searchValue={searchInput} onChange={setSearchInput} onSearch={handleSubmit} />
 
       <div className="search-actions">
         <button className="search-button" onClick={handleRefresh}>
-          Refresh
+          {t('refresh')}
         </button>
 
         <button className="search-button" onClick={() => setHasTestError(true)}>
-          Test Error
+          {t('testError')}
         </button>
       </div>
 
-      <div className={`detail ${location.pathname.includes('/pokemon/') ? 'detail_open' : ''}`}>
+      <div className={`detail ${pathName.includes('/pokemon/') ? 'detail_open' : ''}`}>
         <div className="detail-list">
           <CardList
             item={pokemonQuery.data}
@@ -197,17 +204,18 @@ function Main() {
             onPageChange={handlePageChange}
           />
         </div>
-
-        <Outlet />
       </div>
     </>
   );
 }
 
-function DetailsPanel() {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const { detailsId } = useParams();
+export function DetailsPanel() {
+  const t = useTranslations('Details');
+  const locale = useLocale();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const {detailsId} = useParams();
+
   const queryClient = useQueryClient();
   const detailsQuery = useQuery({
     queryKey: [...QUERY_KEY, detailsId ?? ''],
@@ -217,18 +225,18 @@ function DetailsPanel() {
         throw new Error('Pokemon details loading error');
       }
 
-      return fetchPokemonById(detailsId);
-    },
+      return fetchPokemonById(String(detailsId));
+    }
   });
 
   const page = parsePage(searchParams.get('page'));
 
   const closeDetails = () => {
-    navigate(`/?page=${page}`);
+    router.push(`/${locale}?page=${page}`);
   };
 
   const refreshDetails = () => {
-    void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+    void queryClient.invalidateQueries({queryKey: QUERY_KEY});
   };
 
   const detailsError = detailsQuery.error instanceof Error ? detailsQuery.error.message : '';
@@ -239,42 +247,68 @@ function DetailsPanel() {
 
   return (
     <aside className="details-panel" onClick={closeDetails}>
-      <div className="details-panel__content" onClick={(event) => event.stopPropagation()}>
+      <div
+        className="details-panel__content"
+        onClick={(event) => event.stopPropagation()}
+      >
         <div className="details-panel__actions">
           <button className="close-details" onClick={closeDetails}>
-            Close
+            {t('close')}
           </button>
 
           <button className="search-button" onClick={refreshDetails}>
-            Refresh
+            {t('refresh')}
           </button>
         </div>
 
-        {detailsQuery.isPending && <p className="loading">Loading details...</p>}
-        {!detailsQuery.isPending && detailsError && <p className="error">Error: {detailsError}</p>}
+        {detailsQuery.isPending && <p className="loading">{t('loading')}</p>}
+        {!detailsQuery.isPending && detailsError && (
+          <p className="error">{t('error', { message: detailsError })}</p>
+        )}
 
         {!detailsQuery.isPending && detailsQuery.data && (
           <div className="card">
             <div className="card-image-wrapper">
-              <img className="card-image" src={detailsQuery.data.image} alt={detailsQuery.data.name} />
+              <Image
+                src={detailsQuery.data.image}
+                alt={detailsQuery.data.name}
+                height={100}
+                width={100}
+                className="card-image"
+              />
             </div>
             <h2 className="card-name">{detailsQuery.data.name}</h2>
             <div className="card-info">
-              <p className="card-text">Height: {detailsQuery.data.height}</p>
-              <p className="card-text">Weight: {detailsQuery.data.weight}</p>
-              <p className="card-text">Base experience: {detailsQuery.data.baseExperience ?? 'unknown'}</p>
-              <p className="card-text">Order: {detailsQuery.data.order ?? 'unknown'}</p>
               <p className="card-text">
-                Types:{' '}
-                {detailsQuery.data.types && detailsQuery.data.types.length
-                  ? detailsQuery.data.types.join(', ')
-                  : 'unknown'}
+                {t('height', { value: detailsQuery.data.height })}
               </p>
               <p className="card-text">
-                Abilities:{' '}
-                {detailsQuery.data.abilities && detailsQuery.data.abilities.length
-                  ? detailsQuery.data.abilities.join(', ')
-                  : 'unknown'}
+                {t('weight', { value: detailsQuery.data.weight })}
+              </p>
+              <p className="card-text">
+                {t('baseExperience', {
+                  value: detailsQuery.data.baseExperience ?? t('unknown'),
+                })}
+              </p>
+              <p className="card-text">
+                {t('order', { value: detailsQuery.data.order ?? t('unknown') })}
+              </p>
+              <p className="card-text">
+                {t('types', {
+                  value:
+                    detailsQuery.data.types && detailsQuery.data.types.length
+                      ? detailsQuery.data.types.join(', ')
+                      : t('unknown'),
+                })}
+              </p>
+              <p className="card-text">
+                {t('abilities', {
+                  value:
+                    detailsQuery.data.abilities &&
+                    detailsQuery.data.abilities.length
+                      ? detailsQuery.data.abilities.join(', ')
+                      : t('unknown'),
+                })}
               </p>
             </div>
           </div>

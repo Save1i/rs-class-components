@@ -1,0 +1,57 @@
+{
+  "Header": {
+    "brand": "Поиск Покемонов",
+    "about": "О проекте",
+    "themeLabel": "Тема",
+    "themeLight": "Светлая",
+    "themeDark": "Тёмная",
+    "languageLabel": "Язык",
+    "languageEn": "Английский",
+    "languageRu": "Русский"
+  },
+  "HomePage": {
+    "title": "Поиск Покемонов",
+    "refresh": "Обновить",
+    "testError": "Тест ошибки"
+  },
+  "Search": {
+    "placeholder": "Введите имя покемона...",
+    "submit": "Поиск",
+    "hint": "Поиск выполняется по полному имени покемона"
+  },
+  "CardList": {
+    "error": "Ошибка: {message}",
+    "loading": "Загрузка...",
+    "selectedCount": "{count, plural, one {# выбранный элемент} few {# выбранных элемента} many {# выбранных элементов} other {# выбранных элементов}}",
+    "unselectAll": "Снять выделение",
+    "download": "Скачать",
+    "previous": "Назад",
+    "next": "Вперёд",
+    "page": "Страница {page}",
+    "height": "Рост: {value}",
+    "weight": "Вес: {value}"
+  },
+  "Details": {
+    "close": "Закрыть",
+    "refresh": "Обновить",
+    "loading": "Загрузка деталей...",
+    "error": "Ошибка: {message}",
+    "height": "Рост: {value}",
+    "weight": "Вес: {value}",
+    "baseExperience": "Базовый опыт: {value}",
+    "order": "Порядковый номер: {value}",
+    "types": "Типы: {value}",
+    "abilities": "Способности: {value}",
+    "unknown": "неизвестно"
+  },
+  "AboutPage": {
+    "title": "О проекте",
+    "author": "Автор:",
+    "course": "Курс:"
+  },
+  "NotFound": {
+    "title": "404",
+    "message": "Страница не найдена.",
+    "back": "Вернуться на главную"
+  }
+}
